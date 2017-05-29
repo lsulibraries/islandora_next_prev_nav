@@ -1,0 +1,6 @@
+name = islandora_next_prev_nav
+description = allows next previous navigation for non-compound obj
+dependencies[] = islandora
+package = Islandora Utilities
+core = 7.x
+version = 7.x-dev

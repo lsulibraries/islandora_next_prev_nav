@@ -1,0 +1,51 @@
+<?php
+
+function next_prev_islandora_view_object_alter(&$object, &$rendered){
+  if(in_array('islandora:collectionCModel', $object->models)){
+    return;
+  }
+  else{
+    $button = function($target_pid){
+      $string = "<a href='/islandora/object/$target_pid'>$target_pid</a>";
+      return $string;
+    };
+    $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_prev($object->id)) . $button(get_next($object->id));
+    get_list_isMemberOf($object->id);
+    dpm($rendered); 
+  }
+}
+
+function get_list_isMemberOf($pid){
+  $rels_predicate = variable_get('islandora_collection_object_relationship', 'isMemberOf');
+  $objects = array();
+  $connection = islandora_get_tuque_connection();
+  $splode = explode(":", $pid);
+  $escaped_pid = str_replace(':', '_', $pid);
+  if ($connection) {
+    $query = <<<EOQ
+  SELECT ?object FROM <#ri>
+  WHERE {
+    ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/$splode[0]:collection> .
+  }
+EOQ;
+ $results = $connection->repository->ri->sparqlQuery($query);
+  }
+ dpm($results);
+ return $results;
+}
+
+function get_next($pid){
+  $pid_part = explode(":", $pid); 
+  $pid_incr = $pid_part[1] + 1;
+  $next = $pid_part[0].":".$pid_incr;
+  return $next;
+}
+
+function get_prev($pid){
+  $pid_part = explode(":", $pid); 
+  $pid_incr = $pid_part[1] - 1;
+  $prev = $pid_part[0].":".$pid_incr;
+  return $prev;
+}
+
+?>
