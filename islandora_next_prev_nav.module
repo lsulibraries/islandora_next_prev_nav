@@ -34,7 +34,7 @@ function next_prev_islandora_view_object_alter(&$object, &$rendered){
   }
 }
 
-//the bones of this function should be credited to the authors of islandora_solution_pack_compound
+//the bones of this function were lovingly stolen from https://github.com/jonathangreen
 function get_list_isMemberOf($pid){
   $rels_predicate = variable_get('islandora_collection_object_relationship', 'isMemberOf');
   $objects = array();
