@@ -5,16 +5,36 @@ function next_prev_islandora_view_object_alter(&$object, &$rendered){
     return;
   }
   else{
-    $button = function($target_pid){
-      $string = "<button><a href='/islandora/object/$target_pid'>$target_pid</a></button>";
+    $button = function($target_pid,$target_label,$direction){
+      $string = "<p>$direction</p><button><a href='/islandora/object/$target_pid'>$target_label</a></button>";
       return $string;
     };
-    $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_next_or_prev($object->id,'p')) . $button(get_next_or_prev($object->id,'n'));
-    get_list_isMemberOf($object->id);
-    dpm($rendered);
+    $index = get_list_isMemberOf($object->id);
+    $current_obj_index = function($pid,$array){
+      foreach($array as $key => $obj){
+        if($obj['object']['value'] == $pid){
+          return $key;
+        }
+      }
+    };
+    $pos = $current_obj_index($object->id, $index);
+    if($pos == count($index)-1){
+      $pos_down = $pos - 1;
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] .  $button(get_next_or_prev($object->id,'p'),$index[$pos_down]['label']['value'],'previous item');
+    }
+    elseif($pos == 0){
+      $pos_up = $pos + 1;
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_next_or_prev($object->id,'n'),$index[$pos_up]['label']['value'],'next item');
+    }
+    else{
+      $pos_down = $pos - 1;
+      $pos_up = $pos + 1;    
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_next_or_prev($object->id,'p'),$index[$pos_down]['label']['value'],'previous item') . $button(get_next_or_prev($object->id,'n'),$index[$pos_up]['label']['value'],'next item');
+    }    
   }
 }
 
+//the bones of this function should be credited to the authors of islandora_solution_pack_compound
 function get_list_isMemberOf($pid){
   $rels_predicate = variable_get('islandora_collection_object_relationship', 'isMemberOf');
   $objects = array();
@@ -32,7 +52,6 @@ function get_list_isMemberOf($pid){
 EOQ;
  $results = $connection->repository->ri->sparqlQuery($query);
   }
- dpm($results);
  return $results;
 }
 
