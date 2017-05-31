@@ -5,10 +5,11 @@ function next_prev_islandora_view_object_alter(&$object, &$rendered){
     return;
   }
   else{
-    $button = function($target_pid,$target_label,$direction){
-      $string = "<p>$direction</p><button><a href='/islandora/object/$target_pid'>$target_label</a></button>";
+    $button = function($target_pid,$target_label,$direction_label){
+      $string = "<p>$direction_label, $target_label </p><a href='/islandora/object/$target_pid'><img typeof='foaf:Image' src='http://ldl.lib.lsu.edu/islandora/object/$target_pid/datastream/TN/view' alt=$target_label></a>";
       return $string;
     };
+
     $index = get_list_isMemberOf($object->id);
     $current_obj_index = function($pid,$array){
       foreach($array as $key => $obj){
@@ -17,24 +18,28 @@ function next_prev_islandora_view_object_alter(&$object, &$rendered){
         }
       }
     };
+
     $pos = $current_obj_index($object->id, $index);
-    if($pos == count($index)-1){
-      $pos_down = $pos - 1;
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] .  $button(get_next_or_prev($object->id,'p'),$index[$pos_down]['label']['value'],'previous item');
+    if(count($index) == 1){
+      return;
     }
-    elseif($pos == 0){
+    if($pos == 0){
       $pos_up = $pos + 1;
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_next_or_prev($object->id,'n'),$index[$pos_up]['label']['value'],'next item');
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button($index[$pos_up]['object']['value'],$index[$pos_up]['label']['value'],'next item');
+    }
+    elseif($pos == count($index)-1){
+      $pos_down = $pos - 1;
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] .  $button($index[$pos_down]['object']['value'],$index[$pos_down]['label']['value'],'previous item');
     }
     else{
       $pos_down = $pos - 1;
       $pos_up = $pos + 1;    
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button(get_next_or_prev($object->id,'p'),$index[$pos_down]['label']['value'],'previous item') . $button(get_next_or_prev($object->id,'n'),$index[$pos_up]['label']['value'],'next item');
-    }    
+      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button($index[$pos_down]['object']['value'],$index[$pos_down]['label']['value'],'previous item') . $button($index[$pos_up]['object']['value'],$index[$pos_up]['label']['value'],'next item');
+    }
   }
 }
 
-//the bones of this function were lovingly stolen from https://github.com/jonathangreen
+//the bones of this function were lovingly stolen from https://github.com/jonathangreen for his work on islandora_solution_pack_compound
 function get_list_isMemberOf($pid){
   $rels_predicate = variable_get('islandora_collection_object_relationship', 'isMemberOf');
   $objects = array();
@@ -53,18 +58,6 @@ EOQ;
  $results = $connection->repository->ri->sparqlQuery($query);
   }
  return $results;
-}
-
-function get_next_or_prev($pid, $op){
-  $pid_part = explode(":", $pid); 
-  if($op == 'n'){
-  $pid_incr = $pid_part[1] + 1;
-  }
-  else{
-  $pid_incr = $pid_part[1] - 1;
-}
-  $next = $pid_part[0].":".$pid_incr;
-  return $next;
 }
 
 ?>
