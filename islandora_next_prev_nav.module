@@ -6,11 +6,13 @@ function next_prev_islandora_view_object_alter(&$object, &$rendered){
   }
   else{
     $button = function($target_pid,$target_label,$direction_label){
-      $string = "<p>$direction_label, $target_label </p><a href='/islandora/object/$target_pid'><img typeof='foaf:Image' src='http://ldl.lib.lsu.edu/islandora/object/$target_pid/datastream/TN/view' alt=$target_label></a>";
+      $string = "<p>$direction_label, $target_label </p><a href='/islandora/object/$target_pid'><img typeof='foaf:Image' src='/islandora/object/$target_pid/datastream/TN/view' alt=$target_label></a>";
       return $string;
     };
 
     $index = get_list_isMemberOf($object->id);
+    //dpm($index);
+
     $current_obj_index = function($pid,$array){
       foreach($array as $key => $obj){
         if($obj['object']['value'] == $pid){
