@@ -1,41 +1,43 @@
 <?php
 
-function next_prev_islandora_view_object_alter(&$object, &$rendered){
+function islandora_next_prev_nav_islandora_view_object_alter(&$object, &$rendered){
   if(in_array('islandora:collectionCModel', $object->models)){
     return;
   }
   else{
     $button = function($target_pid,$target_label,$direction_label){
-      $string = "<p>$direction_label, $target_label </p><a href='/islandora/object/$target_pid'><img typeof='foaf:Image' src='http://ldl.lib.lsu.edu/islandora/object/$target_pid/datastream/TN/view' alt=$target_label></a>";
+      $string = "<a href='/islandora/object/$target_pid'>"
+          . "<figure>"
+          . "<figcaption>$direction_label</figcaption>"
+          . "<img typeof='foaf:Image' src='/islandora/object/$target_pid/datastream/TN/view' alt=$target_label>"
+          . "</figure>"
+          . "</a>";
       return $string;
     };
 
     $index = get_list_isMemberOf($object->id);
-    $current_obj_index = function($pid,$array){
-      foreach($array as $key => $obj){
-        if($obj['object']['value'] == $pid){
+    $current_obj_index = function ($pid, $array) {
+      foreach ($array as $key => $obj) {
+        if ($obj['object']['value'] == $pid) {
           return $key;
         }
       }
     };
 
     $pos = $current_obj_index($object->id, $index);
-    if(count($index) == 1){
+    if (count($index) == 1) {
       return;
     }
-    if($pos == 0){
-      $pos_up = $pos + 1;
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button($index[$pos_up]['object']['value'],$index[$pos_up]['label']['value'],'next item');
-    }
-    elseif($pos == count($index)-1){
-      $pos_down = $pos - 1;
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] .  $button($index[$pos_down]['object']['value'],$index[$pos_down]['label']['value'],'previous item');
-    }
-    else{
-      $pos_down = $pos - 1;
-      $pos_up = $pos + 1;    
-      $rendered[null]['#markup'] = $rendered[null]['#markup'] . $button($index[$pos_down]['object']['value'],$index[$pos_down]['label']['value'],'previous item') . $button($index[$pos_up]['object']['value'],$index[$pos_up]['label']['value'],'next item');
-    }
+
+    $btn_down = $pos > 0 ? $button($index[$pos - 1]['object']['value'],$index[$pos - 1]['label']['value'],'previous item') : '';
+    $btn_up   = $pos < count($index) - 1 ? $button($index[$pos + 1]['object']['value'],$index[$pos + 1]['label']['value'],'next item') : '';
+
+    $append   = function(&$item, $key) use($btn_up, $btn_down) {
+      if ($key == '#markup') {
+        $item .= $btn_down . $btn_up;
+      }
+    };
+    array_walk_recursive($rendered, $append);
   }
 }
 
