@@ -1,10 +1,10 @@
 <?php
 
-function islandora_next_prev_nav_islandora_view_object_alter(&$object, &$rendered){
-  if(in_array('islandora:collectionCModel', $object->models)){
+function islandora_next_prev_nav_islandora_view_object_alter(&$object, &$rendered) {
+  if (in_array('islandora:collectionCModel', $object->models)) {
     return;
   }
-  else{
+  else {
     $button = function($target_pid,$target_label,$direction_label){
       $string = "<a href='/islandora/object/$target_pid'>"
           . "<figure>"
