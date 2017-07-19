@@ -6,12 +6,12 @@ function islandora_next_prev_nav_islandora_view_object_alter(&$object, &$rendere
   }
   else {
     $button = function($target_pid,$target_label,$direction_label){
-      $string = "<a href='/islandora/object/$target_pid'>"
+      $string = "<div class='prevnext'><a href='/islandora/object/$target_pid'>"
           . "<figure>"
           . "<figcaption>$direction_label</figcaption>"
           . "<img typeof='foaf:Image' src='/islandora/object/$target_pid/datastream/TN/view' alt=$target_label>"
           . "</figure>"
-          . "</a>";
+          . "</a></div>";
       return $string;
     };
 
